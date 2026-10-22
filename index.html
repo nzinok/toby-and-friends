@@ -328,6 +328,41 @@ table.week{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums
 .seg button[aria-pressed="true"]{background:var(--grape);color:#fff}
 .audon{font:inherit;font-size:14px;border:none;border-radius:99px;padding:5px 12px;cursor:pointer;background:var(--leaf);color:#fff}
 .audon[aria-pressed="false"]{background:var(--line);color:var(--ink)}
+/* music button with rising notes */
+.aud-btn{position:relative;overflow:visible}
+.aud-btn>svg{width:28px;height:28px}
+.aud-btn.playing{animation:ringpulse 2s ease-in-out infinite}
+@keyframes ringpulse{50%{box-shadow:0 5px 0 color-mix(in srgb,var(--grape) 55%,#000),0 0 0 8px color-mix(in srgb,var(--grape) 25%,transparent)}}
+.fly i{position:absolute;left:50%;top:4px;font-style:normal;font-size:20px;line-height:1;color:var(--grape);opacity:0;pointer-events:none;animation:fly 3.6s ease-out infinite;text-shadow:0 1px 0 var(--card)}
+.fly i:nth-child(2){animation-delay:.9s;color:var(--sky)}.fly i:nth-child(3){animation-delay:1.8s;color:var(--rose)}.fly i:nth-child(4){animation-delay:2.7s;color:var(--sun)}
+.aud-btn.playing .fly i{animation-duration:2.2s}
+@keyframes fly{0%{opacity:0;transform:translate(-50%,0) scale(.6)}15%{opacity:1}100%{opacity:0;transform:translate(calc(-50% + var(--x)),-62px) rotate(var(--r)) scale(1.15)}}
+.aud-panel select{font:inherit;color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:12px;padding:6px 8px}
+.minebox{display:grid;gap:6px}
+.minebox ul{list-style:none;margin:0;padding:0;display:grid;gap:4px;max-height:130px;overflow-y:auto}
+.minebox li{display:flex;gap:6px;align-items:center;font-size:14px;background:var(--bg);border-radius:10px;padding:4px 8px}
+.minebox li.cur{outline:2px solid var(--grape)}
+.mplay{flex:none;width:30px;height:30px;border-radius:50%;border:none;background:var(--grape);color:#fff;cursor:pointer;font-size:13px}
+.minebox li .mn{cursor:pointer;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.minebox .chg{background:var(--card);color:var(--ink)}
+.gbtn{font:inherit;font-size:15px;padding:4px 16px;border-radius:99px;border:2px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+.gbtn[aria-pressed="true"]{background:var(--sea);border-color:var(--sea);color:var(--on)}
+.foot{margin-top:28px;padding-block:14px 8px;padding-inline:70px;text-align:center;font-size:14px;color:var(--muted);border-top:2px dashed var(--line);line-height:1.7}
+.foot a{color:var(--sea)}
+.ps-copy{margin-top:4px;font-size:9.5px;color:#777;text-align:center}
+@media (prefers-reduced-motion:reduce){.fly i,.aud-btn.playing{animation:none!important}}
+.sw-tg{all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:10px;width:100%;padding:8px 12px;border-radius:14px;background:var(--bg)}
+.sw-tg:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+.sw-lb{flex:1;font-family:var(--f-display);font-size:17px}
+.sw-st{font-size:14px;color:var(--muted)}
+.sw-track{position:relative;flex:none;width:54px;height:30px;border-radius:99px;background:var(--line);transition:background .25s}
+.sw-knob{position:absolute;top:3px;right:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 2px 4px rgba(0,0,0,.25);transition:transform .25s}
+.sw-tg[aria-checked="true"] .sw-track{background:var(--leaf)}
+.sw-tg[aria-checked="true"] .sw-knob{transform:translateX(-24px)}
+.sw-tg[aria-checked="true"] .sw-st{color:var(--leaf);font-weight:700}
+.setrow{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.setrow label,.setrow span{color:var(--muted)}
+.setrow input{font:inherit;padding:8px 12px;border-radius:12px;border:2px solid var(--line);background:var(--bg);color:var(--ink);min-width:0;flex:1;max-width:280px}
 /* player */
 .player{position:fixed;inset:0;z-index:20;display:grid;grid-template-rows:auto 1fr;gap:10px;overflow-y:auto;
   --ph:var(--sea);background:radial-gradient(circle at 40% 35%,color-mix(in srgb,var(--ph) 30%,var(--bg)),var(--bg) 75%);transition:background .6s;
@@ -446,7 +481,6 @@ table.week{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums
       <div class="dtools">
         <label for="logDate">מעבר לתאריך:</label><input type="date" id="logDate">
         <button class="mini" id="dToday">היום</button>
-        <label for="kidName">שם:</label><input id="kidName" placeholder="שם הגיבור" size="10">
       </div>
       <div class="daybar"><h2 style="font-size:22px">חמש ישיבות ביום</h2><span class="daystars" id="dayStars"><b>★</b><span id="dayStarN">0</span>&nbsp;היום</span></div>
       <div class="slots" id="slots"></div>
@@ -489,10 +523,16 @@ table.week{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums
   </section>
 
   <section id="p-parent" hidden>
+    <div class="panel settings">
+      <h2>הגדרות</h2>
+      <div class="setrow"><label for="kidName">השם שיופיע בתוכנה:</label><input id="kidName" placeholder="שם הגיבור"></div>
+      <div class="setrow" id="genderRow"><span>פונים אל:</span><button class="gbtn" data-g="m">בן</button><button class="gbtn" data-g="f">בת</button></div>
+      <p class="muted" style="font-size:15px">השם מופיע במחמאות ובדף המודפס. הבחירה בן או בת קובעת את הניסוח של המחמאות, הדמויות והמדריך.</p>
+    </div>
     <article class="parent panel">
       <h2>מדריך להורה</h2>
       <p>התוכנית בנויה לפי מה שפיזיותרפיסטים נותנים לילדים עם הקושי הזה. היא לא מחליפה בדיקה ומעקב של רופא הילדים, ומומלץ להראות לו אותה.</p>
-      <div class="note"><b>מילון המשחק.</b> ״הברז הקטן״ הוא שרירי הבסיס שהתרגול מכוון אליהם, אלה שסוגרים כשמחכים. ״הכס״ הוא הישיבה הקבועה בשירותים. כדאי להסביר לילד את המילים האלה פעם אחת בעל פה, ומאז להשתמש בהן במשחק.</div>
+      <div class="note"><b>מילון המשחק.</b> ״הברז הקטן״ הוא שרירי הבסיס שהתרגול מכוון אליהם, אלה שסוגרים כשמחכים. ״הכס״ הוא הישיבה הקבועה בשירותים. כדאי להסביר <span data-m="לילד" data-f="לילדה">לילד</span> את המילים האלה פעם אחת בעל פה, ומאז להשתמש בהן במשחק.</div>
       <h3>מה מצאנו במחקר</h3>
       <ul>
         <li><b>אצל רוב הילדים הבעיה היא תיאום, ולא חולשה.</b> כמחצית מהילדים סוגרים את ״הברז״ דווקא כשהם מנסים להתרוקן, במקום לפתוח אותו. לכן העיקר הוא ללמוד לשחרר.</li>
@@ -509,7 +549,7 @@ table.week{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums
         <li><b>נשיפות הכוח</b>: שאיפה לבטן, ואז נשיפה ארוכה עם בטן מעט מוקשחת החוצה, בלי לעצור נשימה ובלי להתאמץ חזק. אפשר לנשוף לבלון אמיתי או לבועות סבון.</li>
         <li><b>כוכבים</b>: ניתנים על המאמץ, לא על התוצאה.</li>
       </ol>
-      <div class="note"><b>בתרגיל ״הצב נכנס ויוצא״</b> הפתיחה חשובה מהסגירה. הסגירה עדינה וקצרה, הפתיחה ארוכה פי שניים, כמו הברז שעל המסך. בודקים שהילד לא מכווץ בטן ולא עוצר נשימה. אם קשה לו להבין, מדלגים בינתיים ומתמקדים בנשימה, בברווז ובכס.</div>
+      <div class="note"><b>בתרגיל ״הצב נכנס ויוצא״</b> הפתיחה חשובה מהסגירה. הסגירה עדינה וקצרה, הפתיחה ארוכה פי שניים, כמו הברז שעל המסך. בודקים <span data-m="שהילד לא מכווץ בטן ולא עוצר נשימה. אם קשה לו להבין" data-f="שהילדה לא מכווצת בטן ולא עוצרת נשימה. אם קשה לה להבין">שהילד לא מכווץ בטן ולא עוצר נשימה. אם קשה לו להבין</span>, מדלגים בינתיים ומתמקדים בנשימה, בברווז ובכס.</div>
       <h3>יומן הכס</h3>
       <ul>
         <li>חמש ישיבות ביום: בוקר, אחרי ארוחת בוקר, אחרי ארוחת צהריים, בבית בצהריים, ו־10 דקות אחרי ארוחת ערב.</li>
@@ -529,7 +569,7 @@ table.week{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums
         <li>אם הרופא נתן תרופה, ממשיכים לפי ההוראות שלו. התרגול בא בנוסף.</li>
         <li>קופות החולים מכסות פיזיותרפיה בתחום הזה, וילדים מגיעים בליווי הורה. במכבי אפשר לפנות ישירות למכוני הפיזיותרפיה של הקופה.</li>
       </ul>
-      <div class="warn"><b>פונים לרופא בהקדם</b> אם יש כאב חזק, דם, הקאות, בטן נפוחה, ירידה במשקל, או שאין שיפור אחרי כמה שבועות. גם כשהילד לא מרגיש שהוא צריך ללכת עד שכבר מאוחר, כדאי שהרופא יבדוק.</div>
+      <div class="warn"><b>פונים לרופא בהקדם</b> אם יש כאב חזק, דם, הקאות, בטן נפוחה, ירידה במשקל, או שאין שיפור אחרי כמה שבועות. גם <span data-m="כשהילד לא מרגיש שהוא צריך" data-f="כשהילדה לא מרגישה שהיא צריכה">כשהילד לא מרגיש שהוא צריך</span> ללכת עד שכבר מאוחר, כדאי שהרופא יבדוק.</div>
       <h3 id="backupH">גיבוי ושחזור</h3>
       <div class="backup">
         <p>כל הסימונים נשמרים רק בדפדפן הזה, ולא נשלחים לשום מקום. לפני החלפת מחשב או דפדפן, או סתם פעם בשבוע, שומרים גיבוי. בדפדפן החדש פותחים את התוכנה ומשחזרים ממנו. השחזור מוסיף את הימים מהגיבוי בלי למחוק ימים שכבר מולאו.</p>
@@ -551,6 +591,7 @@ table.week{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums
       <p class="src">מקורות: <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC3750818/" target="_blank" rel="noopener">BMC Pediatrics 2013</a> · <a href="https://cris.maastrichtuniversity.nl/portal/en/publications/effectiveness-of-pelvic-physiotherapy-in-children-with-functional-constipation-compared-with-standard-medical-care(47ebd0d9-86fa-4a67-b34a-c458f56c15dc).html" target="_blank" rel="noopener">Gastroenterology</a> · <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC4525569" target="_blank" rel="noopener">JCDR 2015</a> · <a href="https://chopib.staywellsolutionsonline.com/Library/Encyclopedia/22,38782" target="_blank" rel="noopener">CHOP</a> · <a href="https://espu.org/e-books/Urotherapy_book/43" target="_blank" rel="noopener">ESPU</a></p>
     </article>
   </section>
+  <footer class="foot">© כל הזכויות שמורות · מותר להשתמש בשמחה לשימוש פרטי · אין לעשות שימוש מסחרי<br>לפניות: <a href="mailto:100br100br@gmail.com">100br100br@gmail.com</a></footer>
 </div>
 
 <div class="player" id="player" hidden>
@@ -570,6 +611,7 @@ table.week{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums
       <div class="ring"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="44" fill="none" stroke="var(--line)" stroke-width="9"/><circle id="ringArc" cx="50" cy="50" r="44" fill="none" stroke="var(--sun)" stroke-width="9" stroke-linecap="round" stroke-dasharray="276.5" stroke-dashoffset="0"/></svg><div class="count" id="pCount"></div></div>
       <div class="row" style="justify-content:center">
         <button class="btn" id="pGo">התחלה</button>
+        <button class="btn sun" id="pNext" hidden>למשימה הבאה</button>
         <button class="btn alt small" id="pDone">סיימנו (סימון ידני)</button>
         <button class="btn alt small" id="pSound">צליל: פועל</button>
       </div>
@@ -592,12 +634,21 @@ table.week{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums
 <div id="printSheet"></div>
 <div class="aud" id="aud">
   <div class="aud-panel" id="audPanel" hidden>
-    <div class="row" style="justify-content:space-between"><b>מוזיקה וצלילים</b><button class="audon" id="audOn" aria-pressed="true">מוזיקה פועלת</button></div>
-    <div class="seg" id="audStyle" role="group" aria-label="סגנון המוזיקה"><button data-s="auto">לפי התרגיל</button><button data-s="calm">רגועה</button><button data-s="happy">שמחה</button></div>
+    <b>מוזיקה וצלילים</b>
+    <button class="sw-tg" id="audOn" role="switch" aria-checked="false"><span class="sw-lb">מוזיקת רקע</span><span class="sw-st" id="audSt">כבויה</span><span class="sw-track"><span class="sw-knob"></span></span></button>
+    <div class="seg" id="audWhen" role="group" aria-label="מתי לנגן"><button data-w="ex">רק בזמן תרגיל</button><button data-w="all">כל הזמן</button></div>
+    <label for="audTrack">מנגינה<select id="audTrack"></select></label>
+    <div id="mineBox" class="minebox" hidden>
+      <label class="btn alt small" for="mineFile" style="cursor:pointer;justify-self:start">הוספת שירים</label><input type="file" id="mineFile" accept="audio/*" multiple hidden>
+      <p class="muted" id="mineMsg" style="font-size:13px"></p><ul id="mineList"></ul>
+    </div>
     <label for="mVol">עוצמת המוזיקה<input type="range" id="mVol" min="0" max="100"></label>
-    <label for="sVol">עוצמת הצלילים<input type="range" id="sVol" min="0" max="100"></label>
+    <label for="sVol">עוצמת צלילי ההדרכה בתרגילים<input type="range" id="sVol" min="0" max="100"></label>
   </div>
-  <button class="aud-btn" id="audBtn" aria-expanded="false" aria-controls="audPanel" aria-label="מוזיקה וצלילים"><span class="eq"><i></i><i></i><i></i></span></button>
+  <button class="aud-btn" id="audBtn" aria-expanded="false" aria-controls="audPanel" aria-label="מוזיקה וצלילים">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V5l11-2v13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><circle cx="6.5" cy="18" r="3" fill="currentColor"/><circle cx="17.5" cy="16" r="3" fill="currentColor"/></svg>
+    <span class="fly" aria-hidden="true"><i style="--x:-26px;--r:-20deg">♪</i><i style="--x:18px;--r:15deg">♫</i><i style="--x:-6px;--r:-8deg">♬</i><i style="--x:28px;--r:22deg">♪</i></span>
+  </button>
 </div>
 
 
@@ -722,10 +773,10 @@ function build3D(){
     if(pose==='lie'){
       const bodyM=Sp(1,fur,36,24);bodyM.scale.set(1.25,.65,.85);bodyM.position.y=.6;root.add(bodyM);
       const belly=Sp(.75,light);belly.scale.set(1.05,.4,.7);belly.position.set(.05,1.0,0);root.add(belly);
-      head.position.set(-1.45,.75,0);head.rotation.set(-.8,0,0);
+      head.position.set(-1.5,.82,.1);head.rotation.set(-.3,0,.85);
       const paws=[[-.3,.35],[.3,.35]].map(([x,z])=>{const p=Sp(.22,fur,16,12);p.scale.set(1,.8,1.1);p.position.set(x,1.2,z);root.add(p);return p;});
       [-1,1].forEach(s=>{const k=Sp(.32,fur);k.scale.set(.9,1.15,.9);k.position.set(1.15,1.0,s*.42);root.add(k);const f=Sp(.17,light,14,10);f.position.set(1.32,1.32,s*.42);f.scale.set(1,.5,1);root.add(f);});
-      update=(t,dt,s)=>{const k=s.breath;belly.scale.y=.4*(1+.75*k);belly.position.y=1.0+.14*k;bodyM.scale.y=.65*(1+.1*k);paws.forEach(p=>p.position.y=1.2+.2*k);head.rotation.z=Math.sin(t*.8)*.05;blinkAll(ey,t,s.sleep>.5);};
+      update=(t,dt,s)=>{const k=s.breath;belly.scale.y=.4*(1+.75*k);belly.position.y=1.0+.14*k;bodyM.scale.y=.65*(1+.1*k);paws.forEach(p=>p.position.y=1.2+.2*k);head.position.y=.82+.05*k;blinkAll(ey,t,s.sleep>.5);};
     }else if(pose==='curl'){
       const bodyM=Sp(1,fur,36,24);bodyM.scale.set(.95,.72,1.05);bodyM.position.set(0,.72,-.2);root.add(bodyM);
       head.position.set(0,.45,.9);head.rotation.set(.9,0,0);
@@ -777,7 +828,7 @@ function build3D(){
     const torso=new THREE.Mesh(new THREE.BufferGeometry(),fur);root.add(torso);
     const capS=Sp(.46,fur),capH=Sp(.46,fur);root.add(capS,capH);
     const spot=Sp(.3,brown,16,12);spot.scale.set(1,.35,1);root.add(spot);
-    const head=new THREE.Group();head.position.set(-1.72,.56,0);head.rotation.set(-.85,0,0);root.add(head);
+    const head=new THREE.Group();head.position.set(-1.72,.6,.1);head.rotation.set(-.3,0,.85);root.add(head);
     head.add(Sp(.56,fur,32,24));
     const sn=Sp(.3,fur);sn.scale.set(1.05,.78,1);sn.position.set(0,-.14,.48);head.add(sn);
     const nose=Sp(.11,dark,12,10);nose.scale.set(1.3,.9,.8);nose.position.set(0,-.04,.77);head.add(nose);
@@ -794,7 +845,32 @@ function build3D(){
         spot.position.set(-.2,.46+.45*L+.42,0);spot.rotation.z=Math.atan2(.95*L,1.7)*.9;
         legs.forEach(l=>{const hip=new V(.55,.46+.95*L,l.s*.3),K=new V(1.15,1.12+.28*L,l.s*.38),F=new V(1.5,.12,l.s*.4);l.th.setTo(hip,K);l.sh.setTo(K,F);l.kn.position.copy(K);l.ft.position.copy(F);});
         tail.position.set(.9,.3+.85*L,0);}
-      tail.rotation.y=Math.sin(t*9)*.6;head.rotation.z=Math.sin(t*1.5)*.06;blinkAll(ey,t,s.sleep>.5,1.7);}
+      tail.rotation.y=Math.sin(t*9)*.6;head.rotation.z=.85+Math.sin(t*1.5)*.05;blinkAll(ey,t,s.sleep>.5,1.7);}
+    return {root,update};
+  }
+
+  /* --- Bobi sitting, for the main scene --- */
+  function dogSit(){
+    const fur=M(0xf6e1bd,.8),cream=M(0xfff6e6,.8),brown=M(0xa0663a,.75),dark=M(0x2b2420,.35);
+    const root=new THREE.Group();
+    const body=Sp(.78,fur,32,24);body.scale.set(.95,1.12,.9);body.position.y=.92;root.add(body);
+    const chest=Sp(.48,cream);chest.scale.set(.9,1.05,.5);chest.position.set(0,1.0,.5);root.add(chest);
+    const spot=Sp(.3,brown,16,12);spot.scale.set(.35,1,1);spot.position.set(.7,1.1,-.1);root.add(spot);
+    [-1,1].forEach(x=>{const h=Sp(.42,fur);h.scale.set(.9,.7,1.2);h.position.set(x*.55,.36,-.05);root.add(h);
+      const f=Sp(.2,fur,14,10);f.scale.set(1,.55,1.4);f.position.set(x*.58,.1,.42);root.add(f);
+      const l=cyl(.16,fur);l.setTo(new V(x*.3,1.0,.42),new V(x*.32,.14,.56));root.add(l);
+      const p=Sp(.2,cream,14,10);p.scale.set(1,.6,1.2);p.position.set(x*.32,.1,.62);root.add(p);});
+    const tailG=new THREE.Group();tailG.position.set(0,.45,-.72);root.add(tailG);
+    const tl=Sp(.15,brown,12,10);tl.scale.set(1,2.4,1);tl.position.y=.3;tailG.add(tl);
+    const head=new THREE.Group();head.position.set(0,2.02,.12);root.add(head);
+    head.add(Sp(.56,fur,32,24));
+    const sn=Sp(.3,cream);sn.scale.set(1.05,.78,1);sn.position.set(0,-.14,.48);head.add(sn);
+    const nose=Sp(.11,dark,12,10);nose.scale.set(1.3,.9,.8);nose.position.set(0,-.04,.77);head.add(nose);
+    const tg=Sp(.12,PINK,12,10);tg.scale.set(.8,.35,.7);tg.position.set(0,-.36,.55);head.add(tg);
+    [-1,1].forEach(x=>{const e=Sp(.3,brown);e.scale.set(.42,1,.7);e.position.set(x*.56,-.1,-.05);e.rotation.z=x*.35;head.add(e);});
+    const patch=Sp(.18,brown,14,10);patch.scale.set(1,1,.4);patch.position.set(.23,.15,.44);head.add(patch);
+    const ey=eyes(head,.23,.14,.5,.1);
+    function update(t){tailG.rotation.z=Math.sin(t*9)*.6;head.rotation.z=Math.sin(t*1.5)*.08;head.rotation.x=Math.sin(t*.9)*.05;blinkAll(ey,t,false,2.3);}
     return {root,update};
   }
 
@@ -834,7 +910,7 @@ function build3D(){
     rest:{bearCurl:[-.2,-.2,-.7,1],toby:[1.95,1.7,-.6,.42]},
     blow:{toby:[-.9,0,Math.PI/2-.55,.95],balloon:[1.5,.3,0,1]},
     sit:{toby:[0,0,-.3,1]},
-    hero:{toby:[0,0,0,.95],bear:[-2.5,-.8,.55,.8],cat:[2.5,-.8,-Math.PI/2+.6,.72],duck:[0,0,0,.55]}
+    hero:{toby:[0,0,0,.95],bear:[-2.7,-1.1,.55,.8],cat:[2.6,-.9,-Math.PI/2+.6,.72],dogSit:[-1.45,2.45,.35,.6],duck:[0,0,0,.55]}
   };
   const MAIN={balloon:'bearLie',cat:'cat',bridge:'dog',turtle:'toby',duck:'duck',rest:'bearCurl',blow:'toby',sit:'toby',hero:'toby'};
 
@@ -850,7 +926,7 @@ function build3D(){
     Object.assign(key.shadow.camera,{left:-7,right:7,top:7,bottom:-7,near:1,far:30});key.shadow.bias=-.0005;scene.add(key);
     const fill=new THREE.DirectionalLight(0xbfe6ff,.35);fill.position.set(-6,4,-2);scene.add(fill);
     scene.add(platform(big?4.4:3.3));
-    const chars=big?{toby:toby(),bear:bear('sit'),cat:cat(),duck:duck()}:{toby:toby(),tap:tap(),balloon:balloon(),bearLie:bear('lie'),bearCurl:bear('curl'),cat:cat(),dog:dog(),duck:duck()};
+    const chars=big?{toby:toby(),bear:bear('sit'),cat:cat(),dogSit:dogSit(),duck:duck()}:{toby:toby(),tap:tap(),balloon:balloon(),bearLie:bear('lie'),bearCurl:bear('curl'),cat:cat(),dog:dog(),duck:duck()};
     const H={};
     for(const k in chars){const h=new THREE.Group();h.add(chars[k].root);scene.add(h);h.visible=false;chars[k].root.traverse(m=>{if(m.isMesh)m.castShadow=true;});H[k]={h,o:chars[k]};}
     const st=blank(),tg=blank();let rate=3,jump=0,mode=null,snapping=false;
@@ -901,9 +977,9 @@ const EX=[
  {id:'bridge',c:'--rose',friend:'עם בובי הכלבלב',name:'גשר',sub:'חיזוק · 6 פעמים',thumb:'up',rounds:6,
   steps:['שוכבים על הגב, כמו בובי','ברכיים כפופות, כפות רגליים על הרצפה','ידיים לאורך הגוף'],tip:'מרימים רק עד שהגוף ישר כמו גשר, לא יותר. נושמים כל הזמן.',
   phases:[{l:'למעלה',t:'מרימים את הגוף ועושים גשר ישר',s:3,a:'up'},{l:'מחזיקים',t:'מחזיקים את הגשר ונושמים',s:3,a:'up'},{l:'למטה',t:'יורדים לאט ונחים',s:4,a:'base'}]},
- {id:'turtle',c:'--leaf',friend:'עם טובי והברז הקטן',name:'הצב נכנס ויוצא',sub:'הברז הקטן · 5 פעמים',thumb:'base',rounds:5,
-  steps:['יושבים בנוח','הבטן רגועה כל הזמן','לא עוצרים את הנשימה'],tip:'הפתיחה ארוכה פי שניים מהסגירה, כמו הברז שעל המסך. אם הבטן מתכווצת, מקלים.',
-  phases:[{l:'סוגרים',t:'טובי נכנס לשריון: סוגרים בעדינות את הברז הקטן',s:3,a:'squeeze'},{l:'פותחים',t:'טובי יוצא ונח: פותחים את הברז לגמרי ונושמים לבטן',s:7,a:'base'}]},
+ {id:'turtle',c:'--leaf',friend:'עם טובי והברז הקטן',name:'הצב נכנס ויוצא',sub:'הברז הקטן · 4 פעמים',thumb:'base',rounds:4,
+  steps:['יושבים בנוח','הבטן רגועה כל הזמן','לא עוצרים את הנשימה'],tip:'סוגרים לאט ובעדינות, ופותחים לאט עוד יותר. הפתיחה ארוכה פי שניים מהסגירה, כמו הברז שעל המסך. אם הבטן מתכווצת, מקלים.',
+  phases:[{l:'סוגרים',t:'טובי נכנס לשריון לאט: סוגרים בעדינות את הברז הקטן',s:5,a:'squeeze'},{l:'פותחים',t:'טובי יוצא ונח: פותחים את הברז לגמרי ונושמים לבטן לאט',s:10,a:'base'}]},
  {id:'duck',c:'--sun',friend:'עם ברווזי',name:'הליכת ברווז',sub:'תנועה · כמה דקות',thumb:'walk',rounds:1,len:[3,5,10],
   steps:['יורדים נמוך, ברכיים כפופות עד הסוף','הגב ישר ככל האפשר','הולכים לאט בבית, כמו ברווזי'],tip:'מתחילים ב־3 דקות ומעלים בהדרגה. אפשר להחזיק צעצוע אהוב.',
   phases:[{l:'הולכים',t:'הולכים נמוך כמו ברווז. כשעייפים נעמדים לרגע וחוזרים',s:180,a:'walk'}]},
@@ -965,7 +1041,7 @@ function renderPosture(){
   const L=document.getElementById('postureList');const on=new Set();
   POSTURE.forEach((p,i)=>{const b=document.createElement('button');b.className='chk';b.innerHTML=`<span class="box"></span><span>${p}</span>`;
     b.onclick=()=>{b.classList.toggle('on');b.classList.contains('on')?on.add(i):on.delete(i);
-      const m=document.getElementById('postureMsg');if(on.size===POSTURE.length){m.textContent='מעולה! אתה יושב כמו צב חזק';confetti();}else m.textContent='';};
+      const m=document.getElementById('postureMsg');if(on.size===POSTURE.length){m.textContent=G('מעולה! אתה יושב כמו צב חזק','מעולה! את יושבת כמו צב חזק');confetti();}else m.textContent='';};
     L.appendChild(b);});
 }
 function starsOf(d){const ex=d.ex?d.ex.length:0;return(ex>=6?1:0)+(d.log?d.log.filter(x=>x&&(x.s==='yes'||x.s==='no')).length:Math.min(d.sits||0,3));}
@@ -982,9 +1058,11 @@ function renderStars(){
 const goal=document.getElementById('goalTxt');goal.value=S.goal||'';goal.oninput=()=>{S.goal=goal.value;save();};
 
 /* ================= sound & music (generated live, no audio files) ================= */
-S.audio=Object.assign({on:true,style:'auto',mv:65,sv:85},S.audio||{});
+const G=(m,f)=>S.gender==='f'?f:m;
+S.audio=Object.assign({on:false,when:'ex',track:'auto',mv:65,sv:85},S.audio||{});
+if(!S.audio.v2){S.audio.on=false;S.audio.when='ex';S.audio.track='auto';S.audio.v2=1;}
 let sound=true;
-const AU={ctx:null,timer:null,next:0,step:0,trk:'calm',noise:null};
+const AU={ctx:null,timer:null,next:0,step:0,trk:'box',noise:null};
 function actx(){
   if(!AU.ctx){const C=window.AudioContext||window.webkitAudioContext;if(!C)return null;
     try{const c=new C();AU.ctx=c;
@@ -1009,29 +1087,82 @@ function pad(t,notes,dur,v){const c=AU.ctx,lp=c.createBiquadFilter(),g=c.createG
   notes.forEach(n=>[-7,7].forEach(d=>{const o=c.createOscillator();o.type='triangle';o.frequency.value=hz(n);o.detune.value=d;o.connect(lp);o.start(t);o.stop(t+dur+1.3);}));}
 function shaker(t,v){const c=AU.ctx,src=c.createBufferSource(),hp=c.createBiquadFilter(),g=c.createGain();src.buffer=AU.noise;hp.type='highpass';hp.frequency.value=6000;
   g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+.08);src.connect(hp);hp.connect(g);g.connect(AU.bus);src.start(t);src.stop(t+.1);}
-function rnd(a){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}
-const TRK={
-  calm:{bpm:64,per:16,ch:[[48,55,64],[45,52,60],[41,48,57],[43,50,59]],sc:[60,62,64,67,69,72,74,76,79],dens:.42},
-  happy:{bpm:100,per:8,ch:[[48,55,64],[43,50,59],[45,52,60],[41,48,57]],sc:[60,62,64,67,69,72,74,76],dens:.62}};
-function wantStyle(){const st=S.audio.style;if(st!=='auto')return st;const P=document.getElementById('player');
-  return P&&!P.hidden&&cur&&['cat','bridge','duck'].includes(cur.id)?'happy':'calm';}
-function sched(){const c=AU.ctx;if(!c)return;
-  while(AU.next<c.currentTime+.25){
-    const s=AU.step,T=TRK[AU.trk],sd=60/T.bpm/2,ci=Math.floor(s/T.per)%4,pos=s%T.per,cyc=Math.floor(s/(T.per*4)),t=AU.next;
-    if(pos===0&&s>0){const w=wantStyle();if(w!==AU.trk){AU.trk=w;AU.step=0;continue;}}
-    const chord=T.ch[ci],calm=AU.trk==='calm';
-    if(pos===0){if(calm)pad(t,chord.map(n=>n+12),T.per*sd,.035);tone(t,hz(chord[0]-12),calm?.15:.13,T.per*sd*.9);}
-    if(!calm){if(pos===4)tone(t,hz(chord[0]-12),.11,.4);if(pos===0||pos===3||pos===6)chord.forEach(n=>mar(t,n+12,.04));if(pos%2===1)shaker(t,.045);}
-    const seed=(ci+1)*97+(cyc%2)*13+pos*7+(calm?0:500),r1=rnd(seed),r2=rnd(seed+1),r3=rnd(seed+2);
-    if(pos===0||r1<T.dens*(pos%2?.6:1)){let n=chord[Math.floor(r2*3)]+12;while(n<60)n+=12;while(n>79)n-=12;
-      if(pos%4!==0){let idx=0,best=99;T.sc.forEach((x,i)=>{if(Math.abs(x-n)<best){best=Math.abs(x-n);idx=i;}});idx=Math.max(0,Math.min(T.sc.length-1,idx+[-1,0,1,1][Math.floor(r3*4)]));n=T.sc[idx];}
-      calm?bell(t,n,.11):mar(t,n,.13);}
+/* original tunes, written as notes: one token per eighth, "-" holds the note, "." is a rest */
+const NN={C:0,D:2,E:4,F:5,G:7,A:9,B:11};
+function nm(x){const m=/^([A-G])(#|b)?(\d)$/.exec(x);return 12*(+m[3]+1)+NN[m[1]]+(m[2]==='#'?1:m[2]==='b'?-1:0);}
+const CH={C:[48,52,55],Am:[45,48,52],F:[41,45,48],G:[43,47,50],Dm:[38,41,45],Em:[40,43,47],D:[38,42,45],Fmaj7:[41,45,48,52]};
+const TRACKS={
+  box:{name:'תיבת נגינה',mood:'calm',bpm:84,spb:6,inst:'bell',acc:'waltz',ch:['C','Am','F','G','C','Am','Dm G','C'],
+    mel:'E5 - G5 - C6 - | B5 - A5 - E5 - | F5 - A5 - C6 - | B5 - - - G5 - | E5 - G5 - C6 - | D6 - C6 - A5 - | G5 - F5 - D5 - | C5 - - - . .'},
+  sea:{name:'גלי הים',mood:'calm',bpm:60,spb:8,inst:'flute',acc:'harp',ch:['Fmaj7','C','G','Am','Fmaj7','C','G','Am'],
+    mel:'A5 - - - G5 - - - | E5 - - - - - . . | D5 - - - G5 - - - | E5 - - - - - . . | A5 - - - C6 - - - | B5 - - - G5 - - - | A5 - G5 - E5 - D5 - | E5 - - - - - . .'},
+  space:{name:'הרפתקה בחלל',mood:'calm',bpm:88,spb:8,inst:'bell',acc:'arp',ch:['Dm','F','C','G','Dm','F','C','G'],
+    mel:'D5 - - F5 A5 - - . | C6 - A5 - F5 - - . | E5 - G5 - C6 - B5 - | D6 - - - B5 - - . | A5 - F5 - D5 - E5 F5 | G5 - A5 - C6 - - . | G5 - E5 - C5 - D5 E5 | D5 - - - - - . .'},
+  march:{name:'צעדת הברווז',mood:'happy',bpm:112,spb:8,inst:'mar',acc:'march',ch:['C','G','Am','F','C','G','F G','C'],
+    mel:'C5 C5 E5 G5 E5 - C5 . | D5 D5 G5 B5 G5 - D5 . | E5 E5 A5 C6 A5 - E5 . | F5 - A5 - G5 F5 E5 D5 | C5 C5 E5 G5 C6 - G5 . | B5 A5 G5 D5 G5 - . . | A5 G5 F5 A5 G5 F5 E5 D5 | C5 - G4 - C5 - . .'},
+  dance:{name:'ריקוד שמח',mood:'happy',bpm:124,spb:8,inst:'pizz',acc:'polka',ch:['G','D','Em','C','G','D','C D','G'],
+    mel:'D5 G5 B5 G5 D6 - B5 . | A5 F#5 D5 F#5 A5 - D6 . | B5 G5 E5 G5 B5 C6 B5 A5 | G5 - E5 - C5 - . . | D5 G5 B5 D6 E6 D6 B5 G5 | A5 B5 A5 F#5 D5 - . . | E5 G5 C6 E5 F#5 A5 D6 C6 | B5 - G5 - G5 - . .'}};
+Object.values(TRACKS).forEach(T=>{const tk=T.mel.replace(/\|/g,' ').trim().split(/\s+/);T.m=new Array(tk.length).fill(null);let last=-1;
+  tk.forEach((x,i)=>{if(x==='-'){if(last>=0)T.m[last].d++;}else if(x==='.')last=-1;else{T.m[i]={n:nm(x),d:1};last=i;}});
+  T.chs=[];T.ch.forEach(spec=>{const p=spec.split(' ');for(let b=0;b<T.spb;b++)T.chs.push(CH[p[p.length>1&&b>=T.spb/2?1:0]]);});});
+function flute(t,n,dur,v){const c=AU.ctx,f=hz(n),o=c.createOscillator(),o2=c.createOscillator(),lfo=c.createOscillator(),lg=c.createGain(),g=c.createGain();
+  o.frequency.value=f;o2.type='triangle';o2.frequency.value=f*2;lfo.frequency.value=5;lg.gain.value=f*.006;lfo.connect(lg);lg.connect(o.frequency);
+  const g2=c.createGain();g2.gain.value=.12;o2.connect(g2);g2.connect(g);o.connect(g);g.connect(AU.bus);
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+.09);g.gain.setValueAtTime(v,t+Math.max(.1,dur*.85));g.gain.linearRampToValueAtTime(0,t+dur+.25);
+  [o,o2,lfo].forEach(x=>{x.start(t);x.stop(t+dur+.3);});}
+function pizz(t,n,v){tone(t,hz(n),v,.28,'triangle');tone(t,hz(n)*2,v*.2,.12);}
+function harp(t,n,v){tone(t,hz(n),v,1.3,'triangle');tone(t,hz(n)*2,v*.15,.4);}
+const INST={bell:(t,n,d,v)=>bell(t,n,v),mar:(t,n,d,v)=>mar(t,n,v*1.1),flute:(t,n,d,v)=>flute(t,n,d,v*.9),pizz:(t,n,d,v)=>pizz(t,n,v*1.1)};
+function accomp(T,b,ch,t,sd){const bar=T.spb*sd,up=ch.map(n=>n+12);
+  switch(T.acc){
+    case 'waltz':if(b===0)tone(t,hz(ch[0]),.16,bar*.7);if(b===2||b===4)up.forEach(n=>tone(t,hz(n),.035,.45));break;
+    case 'harp':{if(b===0){tone(t,hz(ch[0]-12),.14,bar);pad(t,up,bar,.025);}const L=[...up,up[0]+12];harp(t,L[[0,1,2,3,2,1,2,3][b]%L.length],.05);break;}
+    case 'arp':{if(b===0){tone(t,hz(ch[0]-12),.15,bar);pad(t,up,bar,.02);}const L=[up[0],up[1],up[2],up[0]+12];tone(t,hz(L[[0,2,1,3,0,2,1,3][b]]+12),.035,.3,'triangle');break;}
+    case 'march':if(b===0)tone(t,hz(ch[0]),.16,.4);if(b===4)tone(t,hz(ch[0]+7),.13,.4);if(b===2||b===6)up.forEach(n=>mar(t,n,.035));if(b%2)shaker(t,.04);break;
+    case 'polka':if(b===0)tone(t,hz(ch[0]),.16,.3);if(b===4)tone(t,hz(ch[2]),.13,.3);if(b===2||b===6)up.forEach(n=>pizz(t,n,.03));if(b%2)shaker(t,.03);break;}}
+function pickTrack(){const tr=S.audio.track;if(tr==='mine'||TRACKS[tr])return tr;const P=document.getElementById('player');
+  if(P&&!P.hidden&&cur)return {balloon:'sea',cat:'dance',bridge:'march',turtle:'box',duck:'march',rest:'sea',blow:'box',sit:'space'}[cur.id]||'box';
+  return 'box';}
+function sched(){const c=AU.ctx;if(!c||!AU.timer)return;
+  while(AU.next<c.currentTime+.3){const T=TRACKS[AU.trk],L=T.m.length,s=AU.step,pos=s%L,sd=60/T.bpm/2,t=AU.next,b=pos%T.spb;
+    if(b===0&&s>0){const w=pickTrack();if(w!==AU.trk&&TRACKS[w]){AU.trk=w;AU.step=0;continue;}}
+    accomp(T,b,T.chs[pos],t,sd);const e=T.m[pos];if(e)INST[T.inst](t,e.n,e.d*sd,.13);
     AU.next+=sd;AU.step++;}}
-function musicStart(){if(!S.audio.on)return;const c=actx();if(!c||AU.timer)return;
-  AU.trk=wantStyle();AU.step=0;AU.next=c.currentTime+.15;AU.timer=setInterval(sched,60);
-  const g=AU.mus.gain;g.cancelScheduledValues(c.currentTime);g.setValueAtTime(g.value,c.currentTime);g.linearRampToValueAtTime(S.audio.mv/100*.9,c.currentTime+2.5);updAud();}
-function musicStop(){if(!AU.timer){updAud();return;}const c=AU.ctx,g=AU.mus.gain,id=AU.timer;AU.timer=null;
-  g.cancelScheduledValues(c.currentTime);g.setValueAtTime(g.value,c.currentTime);g.linearRampToValueAtTime(0,c.currentTime+1);setTimeout(()=>clearInterval(id),1100);updAud();}
+function fadeMus(v,sec){const c=AU.ctx,g=AU.mus.gain;g.cancelScheduledValues(c.currentTime);g.setValueAtTime(g.value,c.currentTime);g.linearRampToValueAtTime(v,c.currentTime+sec);}
+function synthStop(){if(!AU.timer)return;const id=AU.timer;AU.timer=null;fadeMus(0,.8);setTimeout(()=>clearInterval(id),900);}
+function musicStart(){const want=pickTrack();
+  if(want==='mine'){synthStop();mineStart();updAud();return;}mineStop();
+  const c=actx();if(!c)return;
+  if(AU.timer){if(want!==AU.trk){AU.trk=want;AU.step=0;AU.next=c.currentTime+.1;}updAud();return;}
+  AU.trk=want;AU.step=0;AU.next=c.currentTime+.15;AU.timer=setInterval(sched,60);fadeMus(S.audio.mv/100*.9,2);updAud();}
+function musicStop(){mineStop();synthStop();updAud();}
+function musicWanted(){const P=document.getElementById('player');return S.audio.on&&(S.audio.when==='all'||(P&&!P.hidden));}
+function syncMusic(){musicWanted()?musicStart():musicStop();}
+
+/* the family's own music files, kept in this browser */
+const MINE={el:null,list:[],i:0,url:null};
+function idb(){return new Promise((res,rej)=>{try{const r=indexedDB.open('tobyMusic',1);r.onupgradeneeded=()=>r.result.createObjectStore('f',{keyPath:'id'});r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);}catch(e){rej(e);}});}
+async function mineLoad(){try{const db=await idb();MINE.list=await new Promise(res=>{const q=db.transaction('f').objectStore('f').getAll();q.onsuccess=()=>res(q.result||[]);q.onerror=()=>res([]);});}catch(e){}renderMine();}
+async function mineAdd(files){let db=null;try{db=await idb();}catch(e){}
+  for(const f of files){if(!/^audio\//.test(f.type))continue;const rec={id:Date.now()+'-'+Math.random().toString(36).slice(2),name:f.name.replace(/\.[^.]+$/,''),blob:f};MINE.list.push(rec);
+    if(db)await new Promise(res=>{try{const tx=db.transaction('f','readwrite');tx.objectStore('f').put(rec);tx.oncomplete=res;tx.onerror=res;tx.onabort=res;}catch(e){res();}});}
+  renderMine();}
+async function mineDel(id){MINE.list=MINE.list.filter(x=>x.id!==id);try{const db=await idb();db.transaction('f','readwrite').objectStore('f').delete(id);}catch(e){}if(!MINE.list.length)mineStop();renderMine();}
+function mineVol(on){if(MINE.el)MINE.el.volume=Math.min(1,S.audio.mv/100*(on?.35:1));}
+function minePlay(i){MINE.i=i;S.audio.mineI=i;S.audio.track='mine';S.audio.on=true;save();mineStop();mineStart();
+  if(!musicWanted()){document.getElementById('mineMsg').textContent='השיר נבחר. הוא יתנגן בזמן התרגילים. עכשיו מושמעת דוגמה קצרה.';setTimeout(()=>{if(!musicWanted())mineStop();},12000);}}
+function mineStart(){if(MINE.el)return;if(MINE.i===0&&S.audio.mineI)MINE.i=S.audio.mineI;if(!MINE.list.length){document.getElementById('mineMsg').textContent='עוד לא נבחרו שירים. לוחצים "הוספת שירים".';return;}
+  MINE.i%=MINE.list.length;const el=new Audio();MINE.url=URL.createObjectURL(MINE.list[MINE.i].blob);el.src=MINE.url;MINE.el=el;mineVol(false);
+  el.onended=()=>{mineStop();MINE.i=(MINE.i+1)%MINE.list.length;S.audio.mineI=MINE.i;save();if(musicWanted()&&S.audio.track==='mine')mineStart();};el.play().catch(()=>{});renderMine();}
+function mineStop(){if(!MINE.el)return;MINE.el.pause();MINE.el=null;if(MINE.url){URL.revokeObjectURL(MINE.url);MINE.url=null;}renderMine();}
+function renderMine(){const box=document.getElementById('mineBox');if(!box)return;box.hidden=S.audio.track!=='mine';
+  const ul=document.getElementById('mineList');ul.innerHTML='';
+  const curI=MINE.list.length?MINE.i%MINE.list.length:-1;
+  MINE.list.forEach((x,i)=>{const li=document.createElement('li');const now=MINE.el&&i===curI;li.className=i===curI?'cur':'';
+    li.innerHTML=`<button class="mplay" aria-label="${now?'עצירה':'ניגון'}">${now?'■':'▶'}</button><span class="mn"></span><button class="chg" aria-label="הסרה">הסרה</button>`;
+    li.querySelector('.mn').textContent=x.name;li.querySelector('.mplay').onclick=()=>{now?mineStop():minePlay(i);};li.querySelector('.mn').onclick=()=>minePlay(i);li.querySelector('.chg').onclick=()=>mineDel(x.id);ul.appendChild(li);});
+  document.getElementById('mineMsg').textContent=MINE.list.length?'':'אפשר לבחור שירים או מנגינות מהמחשב או מהטלפון. הם נשמרים רק בדפדפן הזה.';updAud();}
+document.getElementById('mineFile').onchange=async e=>{await mineAdd([...e.target.files]);e.target.value='';if(musicWanted())musicStart();};
 function beep(f,len=.35){if(!sound||!S.audio.sv)return;const c=actx();if(!c)return;const t=c.currentTime;
   tone(t,f,.34,len+.5,'sine',AU.sfx);tone(t,f*2,.09,len,'sine',AU.sfx);tone(t,f*1.5,.05,len*.8,'triangle',AU.sfx);}
 /* guide sounds that follow each phase: rising on inhale, falling on exhale, running water when the tap opens, footsteps for the duck */
@@ -1055,26 +1186,29 @@ function phaseStart(k,dur){phaseStop();if(!sound||!S.audio.sv||!k)return;const c
     case 'up':[60,64,67,72].forEach((n,i)=>pluck(t+i*.14,n,.22,.5));glide(t,D,262,392,.4,.04,'triangle');break;
     case 'hold':for(let i=0;i<N;i++)pluck(t+i,67,.18,.35);glide(t,D,262,262,.3,.035,'triangle');break;
     case 'down':glide(t,D,392,196,.1,.08,'triangle');[72,67,64,60].forEach((n,i)=>pluck(t+i*(D/4),n,.14,1.2));break;
-    case 'close':for(let i=0;i<N;i++)pluck(t+i,[72,74,76,79][i%4],.2,.35);glide(t,D,523,622,.9,.03,'triangle');break;
-    case 'open':for(let i=0;i<N;i++)pluck(t+i,[79,76,74,72,69,67,64,62,60][i%9],.14,1.6);air(t,D,900,550,.15,.07,.5);break;
+    case 'close':for(let i=0;i<N;i+=2)pluck(t+i,[72,74,76][(i/2)%3],.18,.6);glide(t,D,523,622,.9,.03,'triangle');break;
+    case 'open':for(let i=0;i<N;i+=2)pluck(t+i,[76,72,69,64,60][(i/2)%5],.14,2);air(t,D,900,550,.15,.07,.5);break;
     case 'walk':{let st=0;const step=()=>{if(!AU.ctx)return;const now=AU.ctx.currentTime+.02;pluck(now,st%2?55:48,.24,.25);st++;PS.list=PS.list.slice(-30);};step();PS.ivl=setInterval(step,500);break;}
     case 'calm':{const wave=()=>{if(!AU.ctx)return;const now=AU.ctx.currentTime+.02;air(now,10,380,900,.4,.08,.6);pluck(now,72,.07,2);PS.list=PS.list.slice(-30);};wave();PS.ivl=setInterval(wave,10000);break;}
   }}
-function duck(on){if(!AU.ctx||!AU.timer)return;AU.mus.gain.setTargetAtTime(S.audio.mv/100*.9*(on?.35:1),AU.ctx.currentTime,.4);}
-function updAud(){const on=S.audio.on;const b=document.getElementById('audBtn');b.classList.toggle('playing',!!AU.timer);b.classList.toggle('off',!on);
-  const o=document.getElementById('audOn');o.setAttribute('aria-pressed',on);o.textContent=on?'מוזיקה פועלת':'מוזיקה כבויה';
-  document.querySelectorAll('#audStyle button').forEach(x=>x.setAttribute('aria-pressed',x.dataset.s===S.audio.style));}
-document.getElementById('audBtn').onclick=e=>{const P=document.getElementById('audPanel');P.hidden=!P.hidden;e.currentTarget.setAttribute('aria-expanded',!P.hidden);if(S.audio.on)musicStart();};
-document.getElementById('audOn').onclick=()=>{S.audio.on=!S.audio.on;save();S.audio.on?musicStart():musicStop();};
-document.getElementById('audStyle').onclick=e=>{const b=e.target.closest('button');if(!b)return;S.audio.style=b.dataset.s;save();
-  if(AU.timer){const w=wantStyle();if(w!==AU.trk){AU.trk=w;AU.step=0;AU.next=AU.ctx.currentTime+.1;}}else if(S.audio.on)musicStart();updAud();};
+function duck(on){if(AU.ctx&&AU.timer)AU.mus.gain.setTargetAtTime(S.audio.mv/100*.9*(on?.35:1),AU.ctx.currentTime,.4);mineVol(on);}
+function updAud(){const on=S.audio.on,b=document.getElementById('audBtn');b.classList.toggle('playing',!!(AU.timer||MINE.el));
+  const o=document.getElementById('audOn');o.setAttribute('aria-checked',on);document.getElementById('audSt').textContent=on?'פועלת':'כבויה';
+  document.querySelectorAll('#audWhen button').forEach(x=>x.setAttribute('aria-pressed',x.dataset.w===S.audio.when));
+  document.getElementById('audTrack').value=S.audio.track;}
+(function(){const sel=document.getElementById('audTrack');sel.innerHTML='<option value="auto">לפי התרגיל (מתחלפת לבד)</option>'+Object.entries(TRACKS).map(([k,T])=>`<option value="${k}">${T.name}</option>`).join('')+'<option value="mine">המוזיקה שלי מהמכשיר</option>';
+  sel.onchange=()=>{S.audio.track=sel.value;save();if(!S.audio.on){S.audio.on=true;save();}musicStop();renderMine();syncMusic();if(!musicWanted()&&S.audio.on){/* preview briefly so the choice is heard */musicStart();setTimeout(()=>{if(!musicWanted())musicStop();},6000);}};})();
+document.getElementById('audBtn').onclick=e=>{const P=document.getElementById('audPanel');P.hidden=!P.hidden;e.currentTarget.setAttribute('aria-expanded',!P.hidden);};
+document.addEventListener('pointerdown',e=>{const P=document.getElementById('audPanel');if(!P.hidden&&!e.target.closest('#aud')){P.hidden=true;document.getElementById('audBtn').setAttribute('aria-expanded','false');}});
+document.getElementById('audOn').onclick=()=>{S.audio.on=!S.audio.on;save();if(S.audio.on){musicStart();if(!musicWanted())setTimeout(()=>{if(!musicWanted())musicStop();},6000);}else musicStop();};
+document.getElementById('audWhen').onclick=e=>{const b=e.target.closest('button');if(!b)return;S.audio.when=b.dataset.w;save();syncMusic();updAud();};
 const mv=document.getElementById('mVol'),sv=document.getElementById('sVol');mv.value=S.audio.mv;sv.value=S.audio.sv;
-mv.oninput=()=>{S.audio.mv=+mv.value;save();if(AU.ctx&&AU.timer)AU.mus.gain.setTargetAtTime(S.audio.mv/100*.9,AU.ctx.currentTime,.1);};
+mv.oninput=()=>{S.audio.mv=+mv.value;save();if(AU.ctx&&AU.timer)AU.mus.gain.setTargetAtTime(S.audio.mv/100*.9,AU.ctx.currentTime,.1);mineVol(false);};
 sv.oninput=()=>{S.audio.sv=+sv.value;save();if(actx())AU.sfx.gain.setTargetAtTime(S.audio.sv/100,AU.ctx.currentTime,.05);};
 sv.onchange=()=>beep(880,.3);
-['pointerdown','keydown'].forEach(ev=>document.addEventListener(ev,function first(){document.removeEventListener('pointerdown',first);document.removeEventListener('keydown',first);if(S.audio.on)musicStart();},{once:true}));
-document.addEventListener('visibilitychange',()=>{if(!AU.ctx)return;if(document.hidden)AU.ctx.suspend();else if(AU.timer)AU.ctx.resume();});
-updAud();
+['pointerdown','keydown'].forEach(ev=>document.addEventListener(ev,function first(){document.removeEventListener('pointerdown',first);document.removeEventListener('keydown',first);syncMusic();},{once:true}));
+document.addEventListener('visibilitychange',()=>{if(document.hidden){if(AU.ctx)AU.ctx.suspend();if(MINE.el)MINE.el.pause();}else{if(AU.ctx&&AU.timer)AU.ctx.resume();if(MINE.el)MINE.el.play().catch(()=>{});}});
+mineLoad();updAud();
 document.getElementById('pSound').onclick=e=>{sound=!sound;if(!sound)phaseStop();e.target.textContent='צליל: '+(sound?'פועל':'כבוי');};
 
 const cv=document.getElementById('confetti'),cx=cv.getContext('2d');let parts=[],cRun=false;
@@ -1109,7 +1243,7 @@ function openPlayer(e){
   $('pCue').textContent='כשמוכנים, לוחצים התחלה';$('pChip').textContent='';
   $('pCount').textContent=fmt(phaseLen(e.phases[0]));arc.style.strokeDashoffset=0;
   stage.setMode(e.id);lenButtons();dots();anim('base',1);PL.style.setProperty('--ph',`var(${e.c})`);
-  $('pGo').textContent='התחלה';$('pDone').hidden=false;PL.hidden=false;
+  $('pGo').textContent='התחלה';$('pDone').hidden=false;$('pNext').hidden=true;PL.hidden=false;syncMusic();
 }
 function startPhase(){
   const p=cur.phases[ph];left=total=phaseLen(p);
@@ -1129,15 +1263,17 @@ function finish(){
   const msg=cur.id==='sit'?'כל הכבוד על הישיבה! עכשיו מסמנים ביומן':(cur.id!=='blow'&&d.ex.length>=6?'סיימת את כל המשימה של היום!':'כל הכבוד! החברים גאים בך');
   $('pCue').innerHTML='<span class="party">'+msg+'</span>';
   $('pCount').textContent='★';$('pGo').textContent=cur.id==='sit'?'ליומן':'שוב';$('pLen').hidden=true;$('pDone').hidden=true;
+  const ix=EX.findIndex(e=>e.id===cur.id),nx=ix<0?null:[...EX.slice(ix+1),...EX.slice(0,ix)].find(e=>!d.ex.includes(e.id));
+  $('pNext').hidden=!nx;if(nx){$('pNext').textContent='למשימה הבאה: '+nx.name+' ‹';$('pNext').onclick=()=>openPlayer(nx);}
 }
 $('pGo').onclick=()=>{
-  if(running===null){if(cur.id==='sit'){PL.hidden=true;sel=new Date();sel.setHours(12,0,0,0);showTab('log');return;}openPlayer(cur);return;}
+  if(running===null){if(cur.id==='sit'){PL.hidden=true;syncMusic();sel=new Date();sel.setHours(12,0,0,0);showTab('log');return;}openPlayer(cur);return;}
   if(!running){running=true;$('pGo').textContent='הפסקה';$('pLen').hidden=true;
     if(fresh){fresh=false;startPhase();}else{anim(cur.phases[ph].a,left);phaseStart(cur.phases[ph].k,left);duck(true);}
     timer=setInterval(tick,1000);}
   else{running=false;clearInterval(timer);phaseStop();duck(false);$('pGo').textContent='המשך';anim('base',1);}
 };
-$('pClose').onclick=()=>{clearInterval(timer);running=false;phaseStop();duck(false);PL.hidden=true;};
+$('pClose').onclick=()=>{clearInterval(timer);running=false;phaseStop();duck(false);PL.hidden=true;syncMusic();};
 $('goBlow').onclick=()=>openPlayer(BLOW);
 $('goSit').onclick=()=>openPlayer(SIT);
 $('pDone').onclick=()=>{if(running===null)return;clearInterval(timer);finish();};
@@ -1148,11 +1284,11 @@ const TEX=[null,{n:'חלוקי נחל',d:'כדורים קטנים וקשים'},{
 const SKINS={
   ocean:{n:'ים',who:'לולו הלוויתן',hi:'שלום! אני לולו. צוללים יחד ליום חדש!',bye:'שבוע של גלים טובים!',acc:'#1b8fd6',soft:'#e3f4ff',line:'#9fd0ee',pt:'bubble'},
   space:{n:'חלל',who:'אסטרו',hi:'שלום! אני אסטרו. ממריאים ליום מצוין!',bye:'שבוע שהגיע עד הירח!',acc:'#3b3f9e',soft:'#ecebff',line:'#b9bcef',pt:'star'},
-  forest:{n:'יער',who:'ינשופי',hi:'הו־הו! אני ינשופי. בוא נמלא את היום!',bye:'ינשופי גאה בך על השבוע!',acc:'#3f8a2c',soft:'#eef8e4',line:'#b9dca2',pt:'leaf'},
+  forest:{n:'יער',who:'ינשופי',hi:'הו־הו! אני ינשופי. {בוא} נמלא את היום!',bye:'ינשופי גאה בך על השבוע!',acc:'#3f8a2c',soft:'#eef8e4',line:'#b9dca2',pt:'leaf'},
   rainbow:{n:'ארץ הקסם',who:'דרקוני',hi:'שלום! אני דרקוני. היום יהיה קסום!',bye:'שבוע קסום של אלופים!',acc:'#8a4fd6',soft:'#f4edff',line:'#d4c0f3',pt:'dot'},
   build:{n:'אתר בנייה',who:'דחפורי',hi:'שלום! אני דחפורי. בונים יום חזק!',bye:'בנית שבוע חזק!',acc:'#d97f00',soft:'#fff3d6',line:'#efcf86',pt:'brick'}};
-const PRAISE=['אלוף אמיתי!','טובי גאה בך מאוד!','איזה גיבור!','יום של כוח והתמדה!','החברים מוחאים לך כפיים!','כל הכבוד על המאמץ!','אתה מתקדם יפה מאוד!','עבודה נהדרת!'];
-const CHEERS=['יופי!','מעולה!','כל הכבוד!','נהדר!','איזה כוח!','אלוף!','מצוין!'];
+const praiseL=()=>[G('אלוף אמיתי!','אלופה אמיתית!'),'טובי גאה בך מאוד!',G('איזה גיבור!','איזו גיבורה!'),'יום של כוח והתמדה!','החברים מוחאים לך כפיים!','כל הכבוד על המאמץ!',G('אתה מתקדם יפה מאוד!','את מתקדמת יפה מאוד!'),'עבודה נהדרת!'];
+const cheersL=()=>['יופי!','מעולה!','כל הכבוד!','נהדר!','איזה כוח!',G('אלוף!','אלופה!'),'מצוין!'];
 const DAYN=['יום ראשון','יום שני','יום שלישי','יום רביעי','יום חמישי','יום שישי','שבת קודש'];
 const DAYS=['א׳','ב׳','ג׳','ד׳','ה׳','ו׳','שבת'];
 const pick=a=>a[Math.floor(Math.random()*a.length)];
@@ -1268,19 +1404,20 @@ function flyStar(rect){const t=$('dayStars');if(!t||!t.offsetParent||calm()){bum
   s.animate([{transform:`translate(${x0}px,${y0}px) scale(.5)`},{transform:`translate(${(x0+x1)/2}px,${Math.min(y0,y1)-80}px) scale(1.6) rotate(180deg)`},{transform:`translate(${x1}px,${y1}px) scale(.8) rotate(360deg)`}],{duration:900,easing:'ease-in-out'}).onfinish=()=>{s.remove();bumpStars();};}
 function bumpStars(){const t=$('dayStars');if(!t)return;t.classList.remove('bump');void t.offsetWidth;t.classList.add('bump');}
 let sayT=null,shownSkin=null;
+const gt=x=>x.replace(/\{בוא\}/g,G('בוא','בואי'));
 function say(msg){const b=$('mBubble'),m=$('mascot');if(!b)return;const sk=SKINS[curSkin];b.innerHTML=`${msg}<small>${sk.who}</small>`;b.classList.remove('pop');void b.offsetWidth;b.classList.add('pop');
-  m.classList.remove('hop');void m.offsetWidth;m.classList.add('hop');clearTimeout(sayT);sayT=setTimeout(()=>{b.innerHTML=`${sk.hi}<small>${sk.who}</small>`;},5000);}
+  m.classList.remove('hop');void m.offsetWidth;m.classList.add('hop');clearTimeout(sayT);sayT=setTimeout(()=>{b.innerHTML=`${gt(sk.hi)}<small>${sk.who}</small>`;},5000);}
 function toast(msg){say(msg);document.querySelectorAll('.toast').forEach(t=>t.remove());const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2000);}
 
 /* manual exercise marking (mission cards + journal chips) */
 function toggleEx(d,id,rect){const was=d.ex.includes(id);if(was)d.ex=d.ex.filter(x=>x!==id);else d.ex.push(id);save();renderMission();renderLog();
   if(was)return;burst(rect.left+rect.width/2,rect.top+rect.height/2,14);beep(880,.2);
-  if(d.ex.length>=6){toast('המשימה היומית הושלמה!');confetti();flyStar(rect);}else toast(pick(CHEERS));}
+  if(d.ex.length>=6){toast('המשימה היומית הושלמה!');confetti();flyStar(rect);}else toast(pick(cheersL()));}
 
 /* journal view */
 function renderLog(){
   const L=$('logBox');L.dataset.skin=curSkin;
-  if(shownSkin!==curSkin){shownSkin=curSkin;const sk=SKINS[curSkin];$('mascot').innerHTML=MASCOT[curSkin];$('decoA').innerHTML=DECO[curSkin];$('decoB').innerHTML=DECO[curSkin];$('mBubble').innerHTML=`${sk.hi}<small>${sk.who}</small>`;}
+  if(shownSkin!==curSkin){shownSkin=curSkin;const sk=SKINS[curSkin];$('mascot').innerHTML=MASCOT[curSkin];$('decoA').innerHTML=DECO[curSkin];$('decoB').innerHTML=DECO[curSkin];$('mBubble').innerHTML=`${gt(sk.hi)}<small>${sk.who}</small>`;}
   const k=dkey(sel),d=getD(k),isToday=k===dkey(new Date());
   $('hName').textContent=DAYN[sel.getDay()]+(isToday?' · היום':'');
   $('hDate').textContent=hebDate(sel);
@@ -1310,7 +1447,7 @@ $('slots').onclick=ev=>{const b=ev.target.closest('[data-a]');if(!b)return;const
   const d=getD(dkey(sel)),before=starsOf(d),rect=card.getBoundingClientRect();
   d.log[i]=a==='reset'?null:{s:a,t:null};save();renderLog();
   const nc=document.querySelector(`.slot[data-i="${i}"]`);
-  if(a==='yes'||a==='no'){nc.classList.add('just');burst(rect.left+rect.width/2,rect.top+rect.height/3,18);beep(880,.2);if(starsOf(d)>before)flyStar(rect);toast(a==='no'?'גם ישיבה היא הצלחה!':pick(CHEERS));}
+  if(a==='yes'||a==='no'){nc.classList.add('just');burst(rect.left+rect.width/2,rect.top+rect.height/3,18);beep(880,.2);if(starsOf(d)>before)flyStar(rect);toast(a==='no'?'גם ישיבה היא הצלחה!':pick(cheersL()));}
   if(a==='yes')setTimeout(()=>openTex(i),500);else checkDone();};
 function openTex(i){const g=$('texGrid');g.innerHTML='';
   for(let n=1;n<=7;n++){const b=document.createElement('button');b.className='tx';b.innerHTML=`${texIcon(n)}<b>${TEX[n].n}</b><small>${TEX[n].d}</small>`;
@@ -1325,7 +1462,7 @@ $('cleanYes').onclick=()=>setClean(true);$('cleanNo').onclick=()=>setClean(false
 function checkDone(){const d=getD(dkey(sel));if(!d.cel&&d.log.every(x=>x)&&d.clean!==null&&$('texSheet').hidden)setTimeout(celebrate,450);}
 function celebrate(){const d=getD(dkey(sel));d.cel=true;save();
   const sat=d.log.filter(x=>x&&(x.s==='yes'||x.s==='no')).length,ok=d.log.filter(x=>x&&x.s==='yes').length,n=starsOf(d);
-  $('celeT').textContent=(S.name?S.name+', ':'')+pick(PRAISE);$('celeT').title=SKINS[curSkin].who;
+  $('celeT').textContent=(S.name?S.name+', ':'')+pick(praiseL());$('celeT').title=SKINS[curSkin].who;
   const lines=[];if(sat)lines.push(`ישבת ${sat} פעמים`);if(ok)lines.push(`הצלחת ${ok} פעמים`);if(d.ex.length>=6)lines.push('סיימת את המשימה היומית');
   $('celeX').textContent=lines.length?lines.join(' · '):'כל יום הוא התחלה חדשה. מחר ממשיכים!';
   $('celeS').innerHTML=Array.from({length:n},(_,i)=>`<span style="animation-delay:${.3+i*.15}s">★</span>`).join('');
@@ -1349,7 +1486,11 @@ $('wPrev').onclick=()=>{sel=addDays(sel,-7);renderLog();};$('wNext').onclick=()=
 $('dPrev').onclick=()=>{sel=addDays(sel,-1);renderLog();};$('dNext').onclick=()=>{sel=addDays(sel,1);renderLog();};
 $('dToday').onclick=()=>{sel=new Date();sel.setHours(12,0,0,0);renderLog();};
 $('logDate').onchange=e=>{if(e.target.value){sel=parseKey(e.target.value);renderLog();}};
-$('mascot').onclick=()=>{say(pick(['איזה כיף שבאת!','כל ישיבה מקבלת כוכב!','אני מאמין בך!','בוא נמשיך!']));const r=$('mascot').getBoundingClientRect();burst(r.left+r.width/2,r.top+r.height/2,10);beep(990,.2);};
+$('mascot').onclick=()=>{say(pick(['איזה כיף שבאת!','כל ישיבה מקבלת כוכב!','אני מאמין בך!',G('בוא נמשיך!','בואי נמשיך!')]));const r=$('mascot').getBoundingClientRect();burst(r.left+r.width/2,r.top+r.height/2,10);beep(990,.2);};
+function applyGender(){document.querySelectorAll('[data-f]').forEach(el=>el.textContent=G(el.dataset.m,el.dataset.f));
+  document.querySelectorAll('#genderRow .gbtn').forEach(b=>b.setAttribute('aria-pressed',b.dataset.g===(S.gender||'m')));
+  $('kidName').placeholder=G('שם הגיבור','שם הגיבורה');shownSkin=null;renderLog();}
+document.querySelectorAll('#genderRow .gbtn').forEach(b=>b.onclick=()=>{S.gender=b.dataset.g;save();applyGender();const r=b.getBoundingClientRect();burst(r.left+r.width/2,r.top+r.height/2,10);});
 const kn=$('kidName');kn.value=S.name||'';kn.oninput=()=>{S.name=kn.value.trim();save();};
 
 /* skins */
@@ -1367,11 +1508,11 @@ function printWeek(){const days=weekDays(),sk=SKINS[curSkin],P=$('printSheet');
     if(d.clean===true)clean++;const exn=d.ex?d.ex.length:0;if(exn>=6)mis++;
     return `<tr><td class="day">${DAYN[i]}<br><b>${hebDate(x,false)}</b><br><small>${x.toLocaleDateString('he-IL')}</small></td>${cells}<td>${d.clean===true?'✓ נקי':d.clean===false?'לא':''}</td><td>${exn>=6?'★ הושלמה':exn?exn+'/6':''}</td><td>${d.log||d.ex?'<span class="st">★ '+starsOf(getD(dkey(x)))+'</span>':''}</td></tr>`;}).join('');
   const totalStars=days.reduce((t,x)=>t+(S.days[dkey(x)]?starsOf(S.days[dkey(x)]):0),0);
-  P.innerHTML=`<div class="ps"><div class="ps-top"><div class="ps-m">${MASCOT[curSkin]}</div><div><h1>יומן הכס של ${S.name||'האלוף שלנו'}</h1><div>${hebDate(days[0],false)} – ${hebDate(days[6])}</div><span class="ps-say">${sk.who}: ${sk.bye}</span></div><div class="ps-deco">${DECO[curSkin]}</div></div>
+  P.innerHTML=`<div class="ps"><div class="ps-top"><div class="ps-m">${MASCOT[curSkin]}</div><div><h1>יומן הכס של ${S.name||G('האלוף שלנו','האלופה שלנו')}</h1><div>${hebDate(days[0],false)} – ${hebDate(days[6])}</div><span class="ps-say">${sk.who}: ${sk.bye}</span></div><div class="ps-deco">${DECO[curSkin]}</div></div>
    <table><thead><tr><th>יום</th>${SLOTS.map(s=>`<th>${s.n}</th>`).join('')}<th>בגד תחתון נקי</th><th>משימה יומית</th><th>כוכבים</th></tr></thead><tbody>${rows}</tbody></table>
    <div class="sum">סיכום השבוע: ${sat} ישיבות · ${ok} הצלחות · ${clean} ימים נקיים · ${mis} ימים עם משימה מלאה</div>
    <div class="lg"><b>מילון המרקמים:</b>${[1,2,3,4,5,6,7].map(n=>`<span>${texIcon(n)} ${n}. ${TEX[n].n}</span>`).join('')}</div>
-   <div class="ps-foot"><div class="notes">הערות להורה / לרופא:</div><div class="ps-total">כוכבים השבוע<b>★ ${totalStars}</b></div></div></div>`;
+   <div class="ps-foot"><div class="notes">הערות להורה / לרופא:</div><div class="ps-total">כוכבים השבוע<b>★ ${totalStars}</b></div></div><div class="ps-copy">טובי והחברים · © כל הזכויות שמורות · לשימוש פרטי בלבד</div></div>`;
   let framed=false;try{framed=window.self!==window.top;}catch(e){framed=true;}
   $('printNote').hidden=!framed;
   setTimeout(()=>{try{window.print();}catch(e){}},80);}
@@ -1409,5 +1550,5 @@ bkInfo();
 $('texLegend').innerHTML=[1,2,3,4,5,6,7].map(n=>`<span>${texIcon(n)}${n}. ${TEX[n].n}</span>`).join('');
 
 
-renderMission();renderPosture();renderStars();renderLog();bkInfo();
+renderMission();renderPosture();renderStars();renderLog();bkInfo();applyGender();
 </script>
