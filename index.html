@@ -247,7 +247,7 @@ table.week{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums
 .ps-head h1{font-family:var(--f-display);font-weight:400;font-size:26px;color:var(--p-acc);margin:0}
 .ps table{width:100%;border-collapse:collapse;font-size:11.5px}
 .ps th{background:var(--p-acc);color:#fff;font-weight:400;padding:5px 3px;font-family:var(--f-display);font-size:12.5px}
-.ps td{border:1.5px solid var(--p-line);padding:2px 3px;text-align:center;height:57px;vertical-align:middle}
+.ps td{border:1.5px solid var(--p-line);padding:1px 3px;text-align:center;height:13mm;vertical-align:middle}
 .ps td.day{background:var(--p-soft);text-align:start;font-size:12px;white-space:nowrap}
 .ps td svg{width:28px;height:28px;display:block;margin:0 auto}
 .ps .lg{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:8px;font-size:11px;align-items:center}
@@ -298,9 +298,9 @@ table.week{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums
 @media (max-width:480px){.mascot{width:92px;height:92px}.saybub{font-size:17px}}
 @media (prefers-reduced-motion:reduce){.mascot svg,.m-wave,.m-spout,.m-blink{animation:none!important}}
 /* print sheet with the chosen design */
-.ps{position:relative;border:3px solid var(--p-acc);border-radius:18px;padding:10px 14px;background:linear-gradient(180deg,var(--p-soft),#fff 130px);overflow:hidden}
+.ps{position:relative;border:3px solid var(--p-acc);border-radius:18px;padding:3mm 4mm;background:linear-gradient(180deg,var(--p-soft),#fff 130px);overflow:hidden;height:186mm;box-sizing:border-box;break-inside:avoid;page-break-inside:avoid}
 .ps-top{display:flex;align-items:center;gap:14px;margin-bottom:8px}
-.ps-m{width:112px;height:112px;flex:none}.ps-deco{width:104px;height:104px;flex:none;margin-inline-start:auto}
+.ps-m{width:26mm;height:26mm;flex:none}.ps-deco{width:24mm;height:24mm;flex:none;margin-inline-start:auto}
 .ps-m svg,.ps-deco svg{width:100%;height:100%;display:block}
 .ps-top h1{font-family:var(--f-display);font-weight:400;font-size:27px;color:var(--p-acc);margin:0;line-height:1.15}
 .ps-say{display:inline-block;margin-top:4px;background:#fff;border:2px solid var(--p-line);border-radius:14px;padding:3px 12px;font-family:var(--f-display);font-size:14px}
@@ -531,6 +531,25 @@ table.week{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums
       <div class="setrow"><label for="kidName">השם שיופיע בתוכנה:</label><input id="kidName" placeholder="שם הגיבור"></div>
       <div class="setrow" id="genderRow"><span>פונים אל:</span><button class="gbtn" data-g="m">בן</button><button class="gbtn" data-g="f">בת</button></div>
       <p class="muted" style="font-size:15px">השם מופיע במחמאות ובדף המודפס. הבחירה בן או בת קובעת את הניסוח של המחמאות, הדמויות והמדריך.</p>
+      <h3 id="backupH" style="margin-top:8px">גיבוי ושחזור</h3>
+      <div class="backup">
+        <p>כל הסימונים נשמרים רק בדפדפן הזה, ולא נשלחים לשום מקום. לפני החלפת מחשב או דפדפן, או סתם פעם בשבוע, שומרים גיבוי. בדפדפן החדש פותחים את התוכנה ומשחזרים ממנו. השחזור מוסיף את הימים מהגיבוי בלי למחוק ימים שכבר מולאו.</p>
+        <p class="muted" id="bkLast"></p>
+        <div class="row">
+          <button class="btn small" id="bkSave">שמירת גיבוי לקובץ</button>
+          <label class="btn alt small" for="bkFile" style="cursor:pointer">שחזור מקובץ</label>
+          <input type="file" id="bkFile" accept=".json,application/json" hidden>
+        </div>
+        <details>
+          <summary>אי אפשר לשמור קובץ? גיבוי בהעתקה</summary>
+          <p class="muted" style="margin:6px 0">מעתיקים את קוד הגיבוי ושומרים אותו, למשל בהודעה לעצמכם. לשחזור מדביקים אותו כאן ולוחצים "שחזור מהקוד".</p>
+          <label for="bkText" class="muted">קוד הגיבוי:</label>
+          <textarea id="bkText" rows="4" spellcheck="false"></textarea>
+          <div class="row" style="margin-top:8px"><button class="btn alt small" id="bkCopy">העתקת קוד הגיבוי</button><button class="btn alt small" id="bkLoad">שחזור מהקוד</button></div>
+        </details>
+        <p class="bkmsg" id="bkMsg" aria-live="polite"></p>
+      </div>
+
     </div>
     <article class="parent panel">
       <h2>מדריך להורה</h2>
@@ -573,24 +592,6 @@ table.week{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums
         <li>קופות החולים מכסות פיזיותרפיה בתחום הזה, וילדים מגיעים בליווי הורה. במכבי אפשר לפנות ישירות למכוני הפיזיותרפיה של הקופה.</li>
       </ul>
       <div class="warn"><b>פונים לרופא בהקדם</b> אם יש כאב חזק, דם, הקאות, בטן נפוחה, ירידה במשקל, או שאין שיפור אחרי כמה שבועות. גם <span data-m="כשהילד לא מרגיש שהוא צריך" data-f="כשהילדה לא מרגישה שהיא צריכה">כשהילד לא מרגיש שהוא צריך</span> ללכת עד שכבר מאוחר, כדאי שהרופא יבדוק.</div>
-      <h3 id="backupH">גיבוי ושחזור</h3>
-      <div class="backup">
-        <p>כל הסימונים נשמרים רק בדפדפן הזה, ולא נשלחים לשום מקום. לפני החלפת מחשב או דפדפן, או סתם פעם בשבוע, שומרים גיבוי. בדפדפן החדש פותחים את התוכנה ומשחזרים ממנו. השחזור מוסיף את הימים מהגיבוי בלי למחוק ימים שכבר מולאו.</p>
-        <p class="muted" id="bkLast"></p>
-        <div class="row">
-          <button class="btn small" id="bkSave">שמירת גיבוי לקובץ</button>
-          <label class="btn alt small" for="bkFile" style="cursor:pointer">שחזור מקובץ</label>
-          <input type="file" id="bkFile" accept=".json,application/json" hidden>
-        </div>
-        <details>
-          <summary>אי אפשר לשמור קובץ? גיבוי בהעתקה</summary>
-          <p class="muted" style="margin:6px 0">מעתיקים את קוד הגיבוי ושומרים אותו, למשל בהודעה לעצמכם. לשחזור מדביקים אותו כאן ולוחצים "שחזור מהקוד".</p>
-          <label for="bkText" class="muted">קוד הגיבוי:</label>
-          <textarea id="bkText" rows="4" spellcheck="false"></textarea>
-          <div class="row" style="margin-top:8px"><button class="btn alt small" id="bkCopy">העתקת קוד הגיבוי</button><button class="btn alt small" id="bkLoad">שחזור מהקוד</button></div>
-        </details>
-        <p class="bkmsg" id="bkMsg" aria-live="polite"></p>
-      </div>
       <p class="src">מקורות: <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC3750818/" target="_blank" rel="noopener">BMC Pediatrics 2013</a> · <a href="https://cris.maastrichtuniversity.nl/portal/en/publications/effectiveness-of-pelvic-physiotherapy-in-children-with-functional-constipation-compared-with-standard-medical-care(47ebd0d9-86fa-4a67-b34a-c458f56c15dc).html" target="_blank" rel="noopener">Gastroenterology</a> · <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC4525569" target="_blank" rel="noopener">JCDR 2015</a> · <a href="https://chopib.staywellsolutionsonline.com/Library/Encyclopedia/22,38782" target="_blank" rel="noopener">CHOP</a> · <a href="https://espu.org/e-books/Urotherapy_book/43" target="_blank" rel="noopener">ESPU</a></p>
     </article>
   </section>
